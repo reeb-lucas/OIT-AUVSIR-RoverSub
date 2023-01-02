@@ -15,6 +15,8 @@ namespace FakeBot
     /// </summary>
     public class BotServer
     {
+        private readonly string[] IMUstring = { "a" }; //https://www.dotnetperls.com/keyvaluepair
+        private readonly List<string> IMUs = new List<string>(IMUstring);
         static void Main()
         {
             //local
@@ -39,6 +41,11 @@ namespace FakeBot
             }
         }
 
+        /// <summary>
+        /// Handles the requests from the Senior Project Program by redirecting 
+        /// to other functions
+        /// </summary>
+        /// <param name="tcpClient"></param>
         public static void ClientHandler(TcpClient tcpClient)
         {
             IPEndPoint clientIpa = (IPEndPoint)tcpClient.Client.RemoteEndPoint;
@@ -49,9 +56,59 @@ namespace FakeBot
             string requestString = Encoding.ASCII.GetString(request, 0, bytesRead);
             Console.WriteLine(requestString);
             //TODO: This is where FakeBot sends fake IMU data to the program
-            byte[] response = Encoding.ASCII.GetBytes("Here is some fake data");
+            byte[] response = new byte[4096];
+            if (requestString == "iRequest")
+                response = InitializationRequestHandler(stream);
+            else if (requestString == "gRequest")
+                response = GetRequestHandler(stream);
+            else if (requestString == null)
+                response = Encoding.ASCII.GetBytes("Failed to complete request. Null requestString.");
+            else
+                response = Encoding.ASCII.GetBytes("Failed to complete request. Unexpected requestString.");
+
             stream.Write(response, 0, response.Length);
             tcpClient.Close();//Note will loop when TODO is done so it does not close after one response
+        }
+
+        /// <summary>
+        /// Intended to be used for the first request. Key assumption: IMUs will 
+        /// always be accessed in the same order
+        /// Output:
+        /// IMU Name - Type of unit
+        /// IMU ID - Based off of port IMU is connected to, begins at 0
+        /// </summary>
+        /// <param name="stream"></param>
+        private static byte[] InitializationRequestHandler(NetworkStream stream)
+        {
+            //for each IMU, send IMU Name and IMU ID
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Intended to be used by all noninitial requests. Key assumption: IMUs
+        /// will always be accessed in the same order
+        /// Output:
+        /// IMU ID - Based off of port IMU is connected to, begins at 0
+        /// All IMU datapoints (varies by IMU type)
+        /// </summary>
+        /// <param name="stream"></param>
+        private static byte[] GetRequestHandler(NetworkStream stream)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Returns if a display is connected or not. This is hardcoded as this is a emulation of the bot.
+        /// Output:
+        /// T/F based logically on if a display is connected
+        /// </summary>
+        /// <param name="displayConnected"></param>
+        private static bool DisplayConnected(bool displayConnected)
+        {
+            if(displayConnected)
+                return true;
+            else
+                return false;
         }
     }
 }
