@@ -15,8 +15,13 @@ namespace FakeBot
     /// </summary>
     public class BotServer
     {
-        private readonly string[] IMUstring = { "a" }; //https://www.dotnetperls.com/keyvaluepair
-        private readonly List<string> IMUs = new List<string>(IMUstring);
+        private struct IMU
+        {
+            public string name;
+            public int id;
+            public byte[] ? data;
+        }
+        private IMU frontalGyroAccMag;
         static void Main()
         {
             //local
@@ -41,6 +46,40 @@ namespace FakeBot
             }
         }
 
+        static byte[] AccessIMUs(string accessType, bool displayConnected)
+        {
+            List<IMU> IMUs = new List<IMU>();
+            //WitMotion WT901C TTL 9 Axis IMU Sensor Tilt Angle Roll Pitch Yaw + Acceleration + Gyroscope + Magnetometer MPU9250 on PC/Android/MCU
+            IMU frontalGyroAccMag = new IMU
+            {
+                name = "WitMotion-WT901C",
+                id = 0,
+                data = Encoding.ASCII.GetBytes("")
+            };
+            string rString;
+            if (displayConnected)
+                rString = "T ";
+            else
+                rString = "F ";
+            //format of response: Name::ID
+            //This is initial access, just getting names and IDs of IMUs
+            if (accessType == "Init")
+                foreach(IMU imu in IMUs)
+                {
+                    rString += imu.name + "::" + imu.id + " ";//Yes it is space terminated right now. If you are reading this and want to add the line to get rid of the last space go for it.
+                }
+            //format of response: Name::ID::Data
+            //This is for getting data from the IMUs. Since this is a fake bot it will randomly choose movement patterns here
+            else if (accessType == "Get")
+            {
+                //TODO: this
+                throw new NotImplementedException();
+            }
+
+            byte[] response = Encoding.ASCII.GetBytes(rString);
+            return response;
+        }
+
         /// <summary>
         /// Handles the requests from the Senior Project Program by redirecting 
         /// to other functions
@@ -51,16 +90,19 @@ namespace FakeBot
             IPEndPoint clientIpa = (IPEndPoint)tcpClient.Client.RemoteEndPoint;
             Console.WriteLine("Connected to client at: {0}:{1}", clientIpa.Address, clientIpa.Port);
             NetworkStream stream = tcpClient.GetStream();
+
             byte[] request = new byte[4096];
             int bytesRead = stream.Read(request, 0, request.Length);
+            bool displayConnected = DisplayConnected(true);
             string requestString = Encoding.ASCII.GetString(request, 0, bytesRead);
+
             Console.WriteLine(requestString);
             //TODO: This is where FakeBot sends fake IMU data to the program
             byte[] response = new byte[4096];
             if (requestString == "iRequest")
-                response = InitializationRequestHandler(stream);
+                response = InitializationRequestHandler(stream, displayConnected);
             else if (requestString == "gRequest")
-                response = GetRequestHandler(stream);
+                response = GetRequestHandler(stream, displayConnected);
             else if (requestString == null)
                 response = Encoding.ASCII.GetBytes("Failed to complete request. Null requestString.");
             else
@@ -78,10 +120,12 @@ namespace FakeBot
         /// IMU ID - Based off of port IMU is connected to, begins at 0
         /// </summary>
         /// <param name="stream"></param>
-        private static byte[] InitializationRequestHandler(NetworkStream stream)
+        private static byte[] InitializationRequestHandler(NetworkStream stream, bool displayConnected)
         {
             //for each IMU, send IMU Name and IMU ID
-            throw new NotImplementedException();
+            byte[] response = new byte[4096];
+            response = AccessIMUs("Init", displayConnected);
+            return response;
         }
 
         /// <summary>
@@ -92,9 +136,12 @@ namespace FakeBot
         /// All IMU datapoints (varies by IMU type)
         /// </summary>
         /// <param name="stream"></param>
-        private static byte[] GetRequestHandler(NetworkStream stream)
+        private static byte[] GetRequestHandler(NetworkStream stream, bool displayConnected)
         {
-            throw new NotImplementedException();
+            //Get IMUs and their data
+            byte[] response = new byte[4096];
+            response = AccessIMUs("Get", displayConnected);
+            return response;
         }
 
         /// <summary>
