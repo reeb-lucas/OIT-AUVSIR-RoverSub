@@ -31,3 +31,14 @@ FakeBot/FakeBot/bin/Debug/net6.0/FakeBot.runtimeconfig.json
 FakeBot/FakeBot/bin/Debug/net6.0/FakeBot.deps.json
 FakeBot/FakeBot/obj/Debug/net6.0/FakeBot.csproj.FileListAbsolute.txt
 FakeBot/FakeBot/obj/Debug/net6.0/FakeBot.GeneratedMSBuildEditorConfig.editorconfig
+*.db
+*.db-shm
+*.opendb
+*.db-wal
+*.ipch
+*.vcxproj
+*.filters
+*.user
+*.editorconfig
+*.editorconfig
+FakeBot/FakeBot/obj/Debug/net6.0/FakeBot.GeneratedMSBuildEditorConfig.editorconfig
