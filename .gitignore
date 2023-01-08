@@ -49,3 +49,4 @@ DAIMU/DAIMU/x64/Debug/DAIMU.vcxproj.FileListAbsolute.txt
 *.idb
 FakeBot/FakeBot/obj/FakeBot.csproj.nuget.dgspec.json
 FakeBot/FakeBot/obj/project.assets.json
+DAIMU/.vs/DAIMU/v16/.suo

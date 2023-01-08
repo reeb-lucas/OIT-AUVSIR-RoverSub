@@ -7,6 +7,8 @@
 #include <WS2tcpip.h>
 #include "IMUBuilder.h"
 
+#define DEFAULT_BUFLEN 512
+
 using namespace std;
 
 int main()
@@ -21,7 +23,7 @@ int main()
         int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
         if (result != 0)
         {
-            cerr << "Error initializing WinSock: " << result << endl;
+            cerr << "Error initializing WinSock: \n" << result << endl;
             connecting = 1;
         }
 
@@ -33,7 +35,7 @@ int main()
         sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (sock == INVALID_SOCKET)
         {
-            cerr << "Error creating socket: " << WSAGetLastError() << endl;
+            cerr << "Error creating socket: \n" << WSAGetLastError() << endl;
             WSACleanup();
             connecting = 1;
         }
@@ -47,7 +49,7 @@ int main()
         // Connect to the server.
         if (connect(sock, (sockaddr*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR)
         {
-            cerr << "Error connecting to server: " << WSAGetLastError() << endl;
+            cerr << "Error connecting to server: \n" << WSAGetLastError() << endl;
             closesocket(sock);
             WSACleanup();
             connecting = 1;
@@ -57,7 +59,32 @@ int main()
     }
 
     //call out to other classes & communicate with server
-    
+    //below is temp to get proof of communication
+    char recvbuf[DEFAULT_BUFLEN];
+    int recvbuflen = DEFAULT_BUFLEN;
+
+    const char* tempMsg = "Msg.\n";
+    int result;
+
+    if ((send(sock, tempMsg, (int)strlen(tempMsg), 0) == SOCKET_ERROR))
+    {
+        cerr << "send failed: %d\n" << WSAGetLastError() << endl;
+        closesocket(sock);
+        WSACleanup();
+        return 1;
+    }
+
+    //recieve until closes
+    do {
+        result = recv(sock, recvbuf, recvbuflen, 0);
+        if (result > 0)
+            printf("Bytes recieved: %d\n", result);
+        else if (result == 0)
+            printf("Connection closed\n");
+        else
+            printf("recv failed: %d\n", WSAGetLastError());
+
+    } while (result > 0);
 
     //close connection to FakeBot
     if(sock != INVALID_SOCKET)
@@ -66,14 +93,3 @@ int main()
 
     return 0;
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
