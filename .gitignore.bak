@@ -36,6 +36,7 @@ FakeBot/FakeBot/obj/Debug/net6.0/FakeBot.GeneratedMSBuildEditorConfig.editorconf
 *.opendb
 *.db-wal
 *.ipch
+*.vcxproj
 *.filters
 *.user
 *.editorconfig
