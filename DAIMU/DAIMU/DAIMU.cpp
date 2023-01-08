@@ -5,6 +5,7 @@
 #include <sstream>
 #include <WinSock2.h>
 #include <WS2tcpip.h>
+#include "IMUBuilder.h"
 
 using namespace std;
 

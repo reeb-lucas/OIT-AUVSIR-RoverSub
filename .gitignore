@@ -42,3 +42,11 @@ FakeBot/FakeBot/obj/Debug/net6.0/FakeBot.GeneratedMSBuildEditorConfig.editorconf
 *.editorconfig
 *.editorconfig
 FakeBot/FakeBot/obj/Debug/net6.0/FakeBot.GeneratedMSBuildEditorConfig.editorconfig
+DAIMU/.vs/DAIMU/v17/.suo
+*.obj
+*.log
+*.tlog
+DAIMU/DAIMU/x64/Debug/DAIMU.vcxproj.FileListAbsolute.txt
+*.idb
+FakeBot/FakeBot/obj/FakeBot.csproj.nuget.dgspec.json
+FakeBot/FakeBot/obj/project.assets.json
