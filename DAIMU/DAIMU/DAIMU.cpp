@@ -78,7 +78,10 @@ int main()
     do {
         result = recv(sock, recvbuf, recvbuflen, 0);
         if (result > 0)
+        {
             printf("Bytes recieved: %d\n", result);
+            printf("Message recieved: %s\n", recvbuf);
+        }
         else if (result == 0)
             printf("Connection closed\n");
         else

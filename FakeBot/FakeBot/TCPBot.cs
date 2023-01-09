@@ -42,7 +42,7 @@ namespace FakeBot
 
                 //Multiple threads in case needed for testing
                 Thread thread = new Thread(() => ClientHandler(tcpClient));
-                thread.Start(tcpClient);
+                thread.Start();
             }
         }
 
@@ -108,6 +108,7 @@ namespace FakeBot
             else
                 response = Encoding.ASCII.GetBytes("Failed to complete request. Unexpected requestString.");
 
+            Console.WriteLine("Response: {0}", Encoding.UTF8.GetString(response));
             stream.Write(response, 0, response.Length);
             tcpClient.Close();//Note will loop when TODO is done so it does not close after one response
         }
