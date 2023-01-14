@@ -2,6 +2,8 @@
 #pragma comment(lib, "Ws2_32.lib")
 #include <string>
 #include <cstdint>
+#include <vector>
+#include <sqlite3.h>
 
 using namespace std;
 
@@ -10,16 +12,26 @@ class IMUBuilder
 	public:
 		struct internalMeasurementUnit 
 		{
-			string name;
-			int id;
-			uint8_t data[];
+			int IMUID;
+			string IMUType;
+			string IMUName;
+			float Weight;
+			string Data;
 		};
+		vector<internalMeasurementUnit> IMUVector;
+		sqlite3* db;
+
+		IMUBuilder();
+		void IMUPopulator(string IMUs);
+		~IMUBuilder();
+
 	private:
-		internalMeasurementUnit getIMU(string name);
-		void setIMU(string name, int id, uint8_t data[]);
-		string getIMUData(string name);
-		void setIMUData(string name, uint8_t data[]);
-		void storeData(internalMeasurementUnit IMU);
-		int verifyData(uint8_t data[]);
+		internalMeasurementUnit getIMU(int IMUID);
+		void setIMU(int IMUID, string IMUType, string IMUName, float Weight);
+		string getIMUData(int IMUID);
+		void setIMUData(int IMUID, string Data);
+		void storeData(int IMUID);
+		int verifyData(string Data);
+		void openDB();
 };
 

@@ -17,9 +17,11 @@ namespace FakeBot
     {
         private struct IMU
         {
-            public string name;
-            public int id;
-            public byte[] ? data;
+            public int IMUID;
+            public string IMUType;
+            public string IMUName;
+            public float Weight;
+            public string ? data;
         }
         private IMU frontalGyroAccMag;
         static void Main()
@@ -46,35 +48,62 @@ namespace FakeBot
             }
         }
 
+        /// <summary>
+        /// Provides the correct response string with data from the IMUs
+        /// </summary>
+        /// <param name="accessType"></param>
+        /// <param name="displayConnected"></param>
+        /// <returns>response string</returns>
         static byte[] AccessIMUs(string accessType, bool displayConnected)
         {
+            //NOTE: This list and future data parsing/sending assume the IMUName is a field the club can modify to include "-AUVSIR-SIDEOFBOT"
+            //CONTINUED: where SIDEOFBOT is either F/R/P/S for Frontal/Rear/Port/Starboard
             List<IMU> IMUs = new List<IMU>();
             //WitMotion WT901C TTL 9 Axis IMU Sensor Tilt Angle Roll Pitch Yaw + Acceleration + Gyroscope + Magnetometer MPU9250 on PC/Android/MCU
             IMU frontalGyroAccMag = new IMU
             {
-                name = "WitMotion-WT901C",
-                id = 0,
-                data = Encoding.ASCII.GetBytes("")
+                IMUType = "Gyro/Accelerometer/Magnetometer",
+                IMUName = "WitMotion-WT901C-AUVSIR-F",
+                Weight = .8F,
+                data = "TempData-ReplaceWithImitationData"
             };
+            IMUs.Add(frontalGyroAccMag);
+            //WitMotion WT901C TTL 9 Axis IMU Sensor Tilt Angle Roll Pitch Yaw + Acceleration + Gyroscope + Magnetometer MPU9250 on PC/Android/MCU
+            IMU rearwardGyroAccMag = new IMU
+            {
+                IMUType = "Gyro/Accelerometer/Magnetometer",
+                IMUName = "WitMotion-WT901C-AUVISR-R",
+                Weight = .8F,
+                data = "TempData-ReplaceWithImitationData"
+            };
+            IMUs.Add(rearwardGyroAccMag);
             string rString;
             if (displayConnected)
                 rString = "T ";
             else
                 rString = "F ";
-            //format of response: Name::ID
-            //This is initial access, just getting names and IDs of IMUs
+            //format of response: ID::Name
+            //This is initial access, just getting general IMU information
+            int IMUCount = 0;
             if (accessType == "Init")
                 foreach(IMU imu in IMUs)
                 {
-                    rString += imu.name + "::" + imu.id + " ";//Yes it is space terminated right now. If you are reading this and want to add the line to get rid of the last space go for it.
+                    rString += IMUCount + "::" + imu.IMUType + "::" + imu.IMUName + "::" + imu.Weight + " ";//Yes it is space terminated right now. If you are reading this and want to add the line to get rid of the last space go for it.
+                    IMUCount++;
                 }
-            //format of response: Name::ID::Data
+            //format of response: ID::Name
             //This is for getting data from the IMUs. Since this is a fake bot it will randomly choose movement patterns here
             else if (accessType == "Get")
             {
-                //TODO: this
-                throw new NotImplementedException();
+                foreach(IMU imu in IMUs)
+                {
+                    rString += IMUCount + "::" + imu.IMUType + "::" + imu.IMUName + "::" + imu.Weight + "::" + imu.data + " ";//Yes it is space terminated right now. If you are reading this and want to add the line to get rid of the last space go for it.
+                    IMUCount++;
+                }
             }
+
+            //Null Terminate string
+            rString += "\0";
 
             byte[] response = Encoding.ASCII.GetBytes(rString);
             return response;
@@ -89,28 +118,50 @@ namespace FakeBot
         {
             IPEndPoint clientIpa = (IPEndPoint)tcpClient.Client.RemoteEndPoint;
             Console.WriteLine("Connected to client at: {0}:{1}", clientIpa.Address, clientIpa.Port);
-            NetworkStream stream = tcpClient.GetStream();
+            bool connected = true;
 
-            byte[] request = new byte[4096];
-            int bytesRead = stream.Read(request, 0, request.Length);
-            bool displayConnected = DisplayConnected(true);
-            string requestString = Encoding.ASCII.GetString(request, 0, bytesRead);
+            while(connected) 
+            {
+                NetworkStream stream = tcpClient.GetStream();
 
-            Console.WriteLine(requestString);
-            //TODO: This is where FakeBot sends fake IMU data to the program
-            byte[] response = new byte[4096];
-            if (requestString == "iRequest")
-                response = InitializationRequestHandler(stream, displayConnected);
-            else if (requestString == "gRequest")
-                response = GetRequestHandler(stream, displayConnected);
-            else if (requestString == null)
-                response = Encoding.ASCII.GetBytes("Failed to complete request. Null requestString.");
-            else
-                response = Encoding.ASCII.GetBytes("Failed to complete request. Unexpected requestString.");
+                byte[] request = new byte[4096];
+                int bytesRead = 0;
+                try
+                {
+                    bytesRead = stream.Read(request, 0, request.Length);
+                }
+                catch (IOException err) 
+                { 
+                    Console.WriteLine("IOException on stream.Read(): {0}", err.Message);
+                    connected = false;
+                }
+                catch (Exception err) 
+                {
+                    Console.WriteLine("An exception occurred on stream.Read(): {0}", err.Message);
+                    connected = false;
+                }
+                bool displayConnected = DisplayConnected(true);
+                string requestString = Encoding.ASCII.GetString(request, 0, bytesRead);
 
-            Console.WriteLine("Response: {0}", Encoding.UTF8.GetString(response));
-            stream.Write(response, 0, response.Length);
-            tcpClient.Close();//Note will loop when TODO is done so it does not close after one response
+                Console.WriteLine(requestString);
+                //TODO: This is where FakeBot sends fake IMU data to the program
+                byte[] response = new byte[4096];
+                if (requestString == "iRequest")
+                    response = InitializationRequestHandler(stream, displayConnected);
+                else if (requestString == "gRequest")
+                    response = GetRequestHandler(stream, displayConnected);
+                else if (requestString == "exiting")
+                    connected = false;
+                else if (requestString == null)
+                    response = Encoding.ASCII.GetBytes("Failed to complete request. Null requestString.");
+                else
+                    response = Encoding.ASCII.GetBytes("Failed to complete request. Unexpected requestString.");
+
+                Console.WriteLine("Response: {0}", Encoding.UTF8.GetString(response));
+                stream.Write(response, 0, response.Length);
+            }
+            
+            tcpClient.Close();
         }
 
         /// <summary>

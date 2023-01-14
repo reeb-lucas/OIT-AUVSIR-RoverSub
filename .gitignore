@@ -50,3 +50,6 @@ DAIMU/DAIMU/x64/Debug/DAIMU.vcxproj.FileListAbsolute.txt
 FakeBot/FakeBot/obj/FakeBot.csproj.nuget.dgspec.json
 FakeBot/FakeBot/obj/project.assets.json
 DAIMU/.vs/DAIMU/v16/.suo
+*.recipe
+*.ilk
+*.enc
